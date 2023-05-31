@@ -4,6 +4,7 @@
 #include "math.h"
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifndef PIPE
 #define PIPE
@@ -17,15 +18,16 @@ typedef struct {
     pthread_cond_t notEmpty;
 } Queue;
 
-typedef struct {
+typedef struct ActiveObject{
     pthread_t thread;
     int running;
     void (*func)();
     Queue* queue;
+    struct ActiveObject* next;
 } ActiveObject;
 
 //Queue operations
-int initQueue(Queue *queue);
+Queue* initQueue();
 int isEmpty(Queue *queue);
 int isFull(Queue* queue);
 void enqueue(Queue* queue, void* data);
@@ -35,12 +37,16 @@ void freeQueue(Queue* queue);
 
 //AO operations
 void busyWait(ActiveObject* this);
-int createActiveObject(void (*myfunct)());
+ActiveObject* createActiveObject(void (*myfunct)());
 Queue* getQueue(ActiveObject* this);
 void stop(ActiveObject* this);
 void sig_handler(int signo);
 
 //Ao functions and helpers
 int isPrime(unsigned int num);
+void randNum(void* args, Queue* nextQ);
+void addEleven(void* args, Queue* nextQ);
+void subtractThirteen(void* args, Queue* nextQ);
+void addTwo(void* args, Queue* nextQ);
 
 #endif

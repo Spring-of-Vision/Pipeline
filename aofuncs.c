@@ -21,59 +21,106 @@ int isPrime(unsigned int num)
     return num-1;
 }
 
-void randNum(void* args)//unsigned int seed, int n)
+void randNum(void* args, Queue* nextQ)//unsigned int seed, int n)
 {
-    int nums[n];
+    printf("entered randNum\n");
+    //parse argument
+    int *input = (int*)args;
+    int n = input[0];
+    unsigned int seed = (unsigned int)input[1];
+    printf("Got input n=%u, seed=%u\n", n, seed);
 
+    //Check for possible problems
+    if(!nextQ)
+    {
+        printf("Can't enqueue to null pointer\n");
+    }
+
+    //perform operation as detailed in the assignment
     srand(seed);
+    int *output;
     //generate a number between 100,000 and 1,000,000
     for(int i = 0; i < n; i++)
     {
-        nums[i] = rand() % 900000 + 100000;
+        *output = rand() % 900000 + 100000;
+        //insert to next queue
+        enqueue(nextQ, (void*)output);
+        printf("queued num in randNum %d\n", *output);
+        usleep(1000);
     }
 
-    //save nums in the queue?
+    //send signal to end the process
+    //enqueue(nextQ, NULL);
 
-    sleep(1);
-
-    //pass to the next ao
 }
 
-void addEleven(void* args)//(int num)
+void addEleven(void* args, Queue* nextQ)//(int num)
 {
-    printf("%d is Prime?:", num);
-    if(isPrime(num))
+    printf("entered addEleven\n");
+    //parse argument
+    int *num = (int*)args;
+    printf("parsed input\n");
+
+    //Check for possible problems
+    if(!nextQ)
+    {
+        printf("Can't enqueue to null pointer\n");
+    }
+    
+    //perform operation as detailed in the assignement
+    printf("%d is Prime?:", *num);
+    if(isPrime(*num))
     {
         printf("True\n");
     }
     else{
         printf("False\n");
     }
+    *num += 11;
 
-    num += 11;
-
-    //pass to next ao
+    //insert to next queue
+    enqueue(nextQ, (void*)num);
+    printf("queued num in +11 %d\n", *num);
 }
 
-void subtractThirteen(void* args)//(int num)
+void subtractThirteen(void* args, Queue* nextQ)//(int num)
 {
-    printf("%d is Prime?:", num);
-    if(isPrime(num))
+    printf("entered subtractThirteen\n");
+    //parse argument
+    int *num = (int*)args;
+    printf("parsed input\n");
+
+    //Check for possible problems
+    if(!nextQ)
+    {
+        printf("Can't enqueue to null pointer\n");
+    }
+
+    //perform operation as detailed in the assignement
+    printf("%d is Prime?:", *num);
+    if(isPrime(*num))
     {
         printf("True\n");
     }
     else{
         printf("False\n");
     }
+    *num -= 13;
 
-    num -= 13;
-
-    //pass to next ao
+    //insert to next queue
+    enqueue(nextQ, (void*)num);
+    printf("queued num in -13 %d\n", *num);
 }
 
-void addTwo(void* args)//(int num)
+void addTwo(void* args, Queue* nextQ)//(int num)
 {
-    printf("Num is %d", num);
-    num+= 2;
-    printf("Original num: %d", num);
+    printf("entered addTwo\n");
+    //parse argument
+    int *num = (int*)args;
+    printf("parsed input\n");
+
+    //perform operation as detailed in the assignement
+    printf("Num is %d\n", *num);
+    *num+= 2;
+    printf("Original num: %d\n", *num);
 }
