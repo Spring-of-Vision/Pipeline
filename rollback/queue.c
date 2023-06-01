@@ -3,64 +3,36 @@
 #define INITIAL_CAPACITY 10
 
 // Function to initialize the queue
-Queue* initQueue()
+void initQueue(Queue* queue)
 {
-    Queue* queue = malloc(sizeof(Queue));
-    if(queue == NULL)
-    {
-        printf("Unable to malloc\n");
-        return NULL;
-    }
-    queue->front = -1;
-    queue->rear = -1;
-    queue->capacity = INITIAL_CAPACITY;
-    queue->items = malloc(INITIAL_CAPACITY*sizeof(void*)); //init size is 10 items
-    if(queue->items == NULL)
-    {
-        printf("Unable to malloc\n");
-        free(queue);
-        return NULL;
-    }
+    queue->front = NULL;
+    queue->rear = NULL;
     pthread_mutex_init(&queue->mutex, NULL);
     pthread_cond_init(&queue->notEmpty, NULL);
-    return queue;
-}
-
-// Function to check if the queue is empty
-int isEmpty(Queue *queue) {
-    return (queue->front == -1 && queue->rear == -1);
-}
-
-// Function to check if the queue is full
-int isFull(Queue* queue) {
-    return (queue->rear == queue->capacity -1);
+    //return queue;
 }
 
 // Function to add an element to the queue
-void enqueue(Queue* queue, void* data) {
-    //printf("entered enqueue\n");
-
+void enqueue(Queue* queue, void* element) {
+    printf("entered enqueue\n");
     pthread_mutex_lock(&queue->mutex);
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        // Failed to allocate memory, handle the error
+        return;
+    }
+    newNode->data = element;
+    newNode->next = NULL;
 
-    if (isFull(queue)) {
-        printf("resized\n");
-        queue->capacity = queue->capacity * 2;
-        void** newItems = realloc(queue->items, queue->capacity * sizeof(void*));
-        if (newItems == NULL) {
-            printf("Unable to realloc\n");
-            pthread_mutex_unlock(&queue->mutex);
-            return;
-        }
-        queue->items = newItems;
-    }
-    if (isEmpty(queue)) {
-        queue->front = 0;
-        queue->rear = 0;
+    if (queue->front == NULL) {
+        // Queue is empty, update both front and rear
+        queue->front = newNode;
+        queue->rear = newNode;
     } else {
-        queue->rear = queue->rear + 1;
-        printf("Is not empty, rear is now %d\n", queue->rear);
+        // Add the new node at the rear
+        queue->rear->next = newNode;
+        queue->rear = newNode;
     }
-    queue->items[queue->rear] = data;
 
     pthread_mutex_unlock(&queue->mutex);
     pthread_cond_signal(&queue->notEmpty);
@@ -73,57 +45,57 @@ void* dequeue(Queue *queue) {
     pthread_mutex_lock(&queue->mutex);
     
 
-    while (isEmpty(queue)) {
+    while (queue->front == NULL) {
         // Queue is empty, wait for a signal
         printf("Cond wait\n");
         pthread_cond_wait(&queue->notEmpty, &queue->mutex);
     }
-    void* data;
-    if (queue->front == queue->rear) {
-        printf("single item in queue\n");
-        data = queue->items[queue->front];
-        queue->front = -1;
-        queue->rear = -1;
-    } else {
-        printf("lmultiple items in queue\n");
-        data = queue->items[queue->front];
-        printf("qfront is %d\n", queue->front);
-        queue->front = queue->front + 1;
+
+    // Remove the node at the front
+    Node* nodeToRemove = queue->front;
+    void* element = nodeToRemove->data;
+    queue->front = nodeToRemove->next;
+
+    if (queue->front == NULL) {
+        // Queue is now empty, update the rear
+        queue->rear = NULL;
     }
     
+    free(nodeToRemove);
     pthread_mutex_unlock(&queue->mutex);
-    return data;
+    return element;
 }
 
 // Function to free the memory used by the queue
 void freeQueue(Queue* queue) {
     pthread_mutex_lock(&queue->mutex);
-    free(queue->items);
-    queue->items = NULL;
-    queue->capacity = 0;
-    queue->front = -1;
-    queue->rear = -1;
+
+    Node* current = queue->front;
+    while (current != NULL) {
+        Node* next = current->next;
+        free(current);
+        current = next;
+    }
+
+    queue->front = NULL;
+    queue->rear = NULL;
+
     pthread_mutex_unlock(&queue->mutex);
     pthread_mutex_destroy(&queue->mutex);
     pthread_cond_destroy(&queue->notEmpty);
-
-    free(queue);
 }
 
 // Function to display the elements in the queue
 void display(Queue* queue) {
     pthread_mutex_lock(&queue->mutex);
-    if (isEmpty(queue)) {
-        printf("Queue is empty.\n");
-        pthread_mutex_unlock(&queue->mutex);
-        return;
+
+    Node* current = queue->front;
+    while (current != NULL) {
+        int* value = (int*)current->data;
+        printf("%d\n", *value);
+        current = current->next;
     }
-    int i = queue->front;
-    while (i != queue->rear) {
-        printf("at place %d there is %d \n", i, *(int*)queue->items[i]);
-        i++;
-    }
-    printf("at place %d there is %d \n",i, *(int*)queue->items[i]);
+
     pthread_mutex_unlock(&queue->mutex);
 }
 
