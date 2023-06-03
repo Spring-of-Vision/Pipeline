@@ -58,6 +58,9 @@ int main(int argc, char* argv[])
     enqueue(ao1->queue, (void*)init);
     enqueue(ao1->queue, NULL);
 
+    pthread_join(ao4->thread, NULL);
+    ao4->running = 0;
+    printf("thread 4 is done\n");
     //join threads
     pthread_join(ao1->thread, NULL);
     ao1->running = 0;
@@ -68,9 +71,6 @@ int main(int argc, char* argv[])
     pthread_join(ao3->thread, NULL);
     ao3->running = 0;
     printf("thread 3 is done\n");
-    pthread_join(ao4->thread, NULL);
-    ao4->running = 0;
-    printf("thread 4 is done\n");
 
     //free
     printf("freeing queue a1\n");
@@ -117,6 +117,8 @@ void busyWait(ActiveObject* this)
         printf("Did not enqueue\n");
     }
     printf("done with n numbers\n");
+    pthread_cond_signal(&(this->queue->notEmpty));
+
 }
 
 ActiveObject* createActiveObject(void (*myfunct)())
@@ -133,6 +135,7 @@ ActiveObject* createActiveObject(void (*myfunct)())
     //printf("before initQ\n");
     if((this->queue = initQueue()) == NULL)
     {
+        free(this);
         return NULL; //did not work
     }
     this->func = myfunct;

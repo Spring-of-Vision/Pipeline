@@ -1,4 +1,3 @@
-
 all: st_pipeline
 
 st_pipeline: st_pipeline.h st_pipeline.o aofuncs.o queue.o
@@ -13,7 +12,10 @@ aofuncs.o: aofuncs.c
 queue.o: queue.c
 	gcc -c queue.c -pthread
 
+myqueue.o: myqueue.c
+	gcc -c myqueue.c -pthread
+
 .PHONY: all clean
 
 clean:
-	-rm *.o *.so client react_server
+	-rm *.o *.so client st_pipeline

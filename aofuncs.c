@@ -1,24 +1,27 @@
 #include "st_pipeline.h"
 
-int isPrime(unsigned int num)
-{
-    //if num is even, return 0
-    if(num%2 == 0 && num !=2)
-    {
+int isPrime(size_t num){
+    if(num<=1){
         return 0;
     }
 
-    //iterate over the odds from 3 to sqrt of num and if a factor is found, return 0
-    for(int i = 3; i <= sqrt(num); i+2)
-    {
-        if(num%i == 0)
-        {
-            return 0;
+    if(num <=3){
+        return 1;
+    }
+    else{
+        if(num %2 ==0){
+            return 0; 
+        }
+        else{
+            for (unsigned int i = 3; i * i <= num; i += 2)
+            {
+                if (num % i == 0)
+                    return 0;
+            }
+
+            return 1;
         }
     }
-
-    //return a positive, nonzero number, and returns 0 if num was 1 (as it is not prime)
-    return num-1;
 }
 
 void randNum(void* args, Queue* nextQ)//unsigned int seed, int n)
@@ -38,13 +41,14 @@ void randNum(void* args, Queue* nextQ)//unsigned int seed, int n)
 
     //perform operation as detailed in the assignment
     srand(seed);
-    int *output;
+    //int *output;
     //generate a number between 100,000 and 1,000,000
     for(int i = 0; i < n; i++)
     {
+        int *output = malloc(sizeof(int));
         *output = rand() % 900000 + 100000;
         //insert to next queue
-        enqueue(nextQ, (void*)output);
+        enqueue(nextQ, output);
         printf("queued num in randNum %d\n", *output);
         usleep(1000);
     }
@@ -56,6 +60,10 @@ void randNum(void* args, Queue* nextQ)//unsigned int seed, int n)
 
 void addEleven(void* args, Queue* nextQ)//(int num)
 {
+    if (nextQ == NULL) {
+    printf("Can't enqueue to a null pointer\n");
+    return;
+    }
     printf("entered addEleven\n");
     //parse argument
     int *num = (int*)args;
@@ -85,6 +93,10 @@ void addEleven(void* args, Queue* nextQ)//(int num)
 
 void subtractThirteen(void* args, Queue* nextQ)//(int num)
 {
+    if (nextQ == NULL) {
+    printf("Can't enqueue to a null pointer\n");
+    return;
+    }
     printf("entered subtractThirteen\n");
     //parse argument
     int *num = (int*)args;
@@ -114,6 +126,11 @@ void subtractThirteen(void* args, Queue* nextQ)//(int num)
 
 void addTwo(void* args, Queue* nextQ)//(int num)
 {
+    if (nextQ == NULL) {
+    printf("Can't enqueue to a null pointer\n");
+    return;
+    }
+
     printf("entered addTwo\n");
     //parse argument
     int *num = (int*)args;
