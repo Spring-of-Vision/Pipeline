@@ -1,82 +1,83 @@
 #include "st_pipeline.h"
 
-int isPrime(size_t num){
-    if(num<=1){
+//PART A: isPrime function
+int isPrime(unsigned int x){
+    
+    //check 0-3 for the protocol, in our program it will not matter
+    if(x == 0 || x == 1)
+    {
         return 0;
     }
 
-    if(num <=3){
+    if(x == 3 || x == 2)
+    {
         return 1;
     }
-    else{
-        if(num %2 ==0){
-            return 0; 
-        }
-        else{
-            for (unsigned int i = 3; i * i <= num; i += 2)
-            {
-                if (num % i == 0)
-                    return 0;
-            }
 
-            return 1;
+    //check first if divisible by 2, otherwise, go through all odd numbers between 3 and sqrt x
+    if(x%2 == 0)
+    {
+        return 0; 
+    }
+    else
+    {
+        for (unsigned int i = 3; i*i <= x; i+= 2)
+        {
+            if (x%i == 0)
+            {
+                return 0;
+            }
         }
+
+        //returns a non-zero value
+        return x;
     }
 }
 
-void randNum(void* args, Queue* nextQ)//unsigned int seed, int n)
+
+void randNum(void* args, Queue* nextQ) //args- unsigned int seed, int n
 {
-    printf("entered randNum\n");
     //parse argument
     int *input = (int*)args;
     int n = input[0];
     unsigned int seed = (unsigned int)input[1];
-    printf("Got input n=%u, seed=%u\n", n, seed);
 
     //Check for possible problems
     if(!nextQ)
     {
         printf("Can't enqueue to null pointer\n");
+        return;
     }
 
     //perform operation as detailed in the assignment
     srand(seed);
-    //int *output;
-    //generate a number between 100,000 and 1,000,000
+    
+    //generate n numbers between 100,000 and 1,000,000
     for(int i = 0; i < n; i++)
     {
         int *output = malloc(sizeof(int));
         *output = rand() % 900000 + 100000;
         //insert to next queue
         enqueue(nextQ, output);
-        printf("queued num in randNum %d\n", *output);
         usleep(1000);
     }
 
-    //send signal to end the process
-    //enqueue(nextQ, NULL);
-
 }
 
-void addEleven(void* args, Queue* nextQ)//(int num)
+void addEleven(void* args, Queue* nextQ)
 {
-    if (nextQ == NULL) {
-    printf("Can't enqueue to a null pointer\n");
-    return;
-    }
-    printf("entered addEleven\n");
     //parse argument
     int *num = (int*)args;
-    printf("parsed input\n");
 
     //Check for possible problems
     if(!nextQ)
     {
         printf("Can't enqueue to null pointer\n");
+        return;
     }
     
     //perform operation as detailed in the assignement
-    printf("%d is Prime?:", *num);
+    printf("%d\n", *num);
     if(isPrime(*num))
     {
         printf("True\n");
@@ -88,28 +89,22 @@ void addEleven(void* args, Queue* nextQ)//(int num)
 
     //insert to next queue
     enqueue(nextQ, (void*)num);
-    printf("queued num in +11 %d\n", *num);
 }
 
-void subtractThirteen(void* args, Queue* nextQ)//(int num)
+void subtractThirteen(void* args, Queue* nextQ)
 {
-    if (nextQ == NULL) {
-    printf("Can't enqueue to a null pointer\n");
-    return;
+    //check for possible problems
+    if (nextQ == NULL)
+    {
+        printf("Can't enqueue to a null pointer\n");
+        return;
     }
-    printf("entered subtractThirteen\n");
+
     //parse argument
     int *num = (int*)args;
-    printf("parsed input\n");
-
-    //Check for possible problems
-    if(!nextQ)
-    {
-        printf("Can't enqueue to null pointer\n");
-    }
 
     //perform operation as detailed in the assignement
-    printf("%d is Prime?:", *num);
+    printf("%d\n", *num);
     if(isPrime(*num))
     {
         printf("True\n");
@@ -121,23 +116,15 @@ void subtractThirteen(void* args, Queue* nextQ)//(int num)
 
     //insert to next queue
     enqueue(nextQ, (void*)num);
-    printf("queued num in -13 %d\n", *num);
 }
 
-void addTwo(void* args, Queue* nextQ)//(int num)
+void addTwo(void* args, Queue* nextQ)
 {
-    if (nextQ == NULL) {
-    printf("Can't enqueue to a null pointer\n");
-    return;
-    }
-
-    printf("entered addTwo\n");
     //parse argument
     int *num = (int*)args;
-    printf("parsed input\n");
 
     //perform operation as detailed in the assignement
-    printf("Num is %d\n", *num);
+    printf("%d\n", *num);
     *num+= 2;
-    printf("Original num: %d\n", *num);
+    printf("%d\n", *num);
 }

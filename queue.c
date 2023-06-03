@@ -31,6 +31,7 @@ Queue* initQueue()
         printf("Unable to malloc\n");
         return NULL;
     }
+    //set up mutex and cond
     pthread_mutex_init(&queue->mutex, NULL);
     pthread_cond_init(&queue->notEmpty, NULL);
     return queue;
@@ -48,12 +49,8 @@ int isFull(Queue* queue) {
 
 // Function to add an element to the queue
 void enqueue(Queue* queue, void* data) {
-    //delete
-    pthread_t threadId = pthread_self();
 
     pthread_mutex_lock(&queue->mutex);
-    //delete
-    printf("Thread ID: %lu LOCKED in enqueue\n", threadId);
 
     if (isFull(queue)) {
         queue->capacity = queue->capacity * 2;
@@ -73,27 +70,16 @@ void enqueue(Queue* queue, void* data) {
     }
     queue->items[queue->rear] = data;
     pthread_cond_signal(&queue->notEmpty);
-
-    //delete
-    printf("Thread ID: %lu UNLOCKED in enqueue\n", threadId);
-
     pthread_mutex_unlock(&queue->mutex);
 }
 
 // Function to remove an element from the queue
 void* dequeue(Queue *queue) {
-    //printf("entered dequeue\n");
-    //thread id- DELETE
-    pthread_t threadId = pthread_self();
-    
     pthread_mutex_lock(&queue->mutex);
-
-    //delete
-    printf("Thread ID: %lu LOCKED in dequeue\n", threadId);
 
     while (isEmpty(queue)) {
         // Queue is empty, wait for a signal
-        printf("Cond wait\n");
+        //printf("Cond wait\n");
         pthread_cond_wait(&queue->notEmpty, &queue->mutex);
     }
     void* data;
@@ -105,9 +91,6 @@ void* dequeue(Queue *queue) {
         data = queue->items[queue->front];
         queue->front = queue->front + 1;
     }
-
-    //delete
-    printf("Thread ID: %lu UNLOCKED in dequeue\n", threadId);
     
     pthread_mutex_unlock(&queue->mutex);
     return data;

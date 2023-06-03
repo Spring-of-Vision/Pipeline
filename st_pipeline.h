@@ -43,7 +43,7 @@ void stop(ActiveObject* this);
 void sig_handler(int signo);
 
 //Ao functions and helpers
-int isPrime(size_t num);
+int isPrime(unsigned int num);
 void randNum(void* args, Queue* nextQ);
 void addEleven(void* args, Queue* nextQ);
 void subtractThirteen(void* args, Queue* nextQ);

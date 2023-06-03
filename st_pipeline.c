@@ -11,22 +11,17 @@ int main(int argc, char* argv[])
     }
 
     int n = atoi(argv[1]);
-    printf("n is %d\n", n);
     int seed;
 
-    //printf("created ints\n");
-
+    //init seed
     if(argc == 3)
     {
         seed = atoi(argv[2]);
-        printf("seed is %d\n", seed);
     }
     else
     {
         seed = time(NULL);
     }
-
-    //printf("initialized seed\n");
 
     //create active objects
     ao1 = createActiveObject((void (*)(void*, Queue*))&randNum);
@@ -58,46 +53,44 @@ int main(int argc, char* argv[])
     enqueue(ao1->queue, (void*)init);
     enqueue(ao1->queue, NULL);
 
+    //main thread waits for all threads
     pthread_join(ao4->thread, NULL);
     ao4->running = 0;
-    printf("thread 4 is done\n");
-    //join threads
+    //printf("thread 4 is done\n");
     pthread_join(ao1->thread, NULL);
     ao1->running = 0;
-    printf("thread 1 is done\n");
+    //printf("thread 1 is done\n");
     pthread_join(ao2->thread, NULL);
     ao2->running = 0;
-    printf("thread 2 is done\n");
+    //printf("thread 2 is done\n");
     pthread_join(ao3->thread, NULL);
     ao3->running = 0;
-    printf("thread 3 is done\n");
+    //printf("thread 3 is done\n");
 
-    //free
-    printf("freeing queue a1\n");
+    //free the queue and ao "objects"
     freeQueue(ao1->queue);
-    printf("freeing ao\n");
     free(ao1);
-    printf("freeing queue a1\n");
+    
     freeQueue(ao2->queue);
-    printf("freeing ao\n");
     free(ao2);
-    printf("freeing queue a1\n");
+
     freeQueue(ao3->queue);
-    printf("freeing ao\n");
     free(ao3);
-    printf("freeing queue a1\n");
-    freeQueue(ao4->queue);
-    printf("freeing ao\n");
+
+    freeQueue(ao4->queue);    
     free(ao4);
 
     return 0;
 }
 
+//Wraps around the call to each AO's individual function, passing the next item to it
 void busyWait(ActiveObject* this)
 {
+    //loop until dequeuing a NULL
     void* task;
     while(task = dequeue(this->queue))
     {
+        //if there is a next object, pass along its queue
         if(this->next == NULL)
         {
             this->func(task, NULL);    
@@ -112,18 +105,18 @@ void busyWait(ActiveObject* this)
         //send signal to end the process
         enqueue(getQueue(this->next), NULL);
     }
-    else
+    /*else
     {
         printf("Did not enqueue\n");
     }
-    printf("done with n numbers\n");
-    pthread_cond_signal(&(this->queue->notEmpty));
+    printf("done with n numbers\n");*/
 
+    pthread_cond_signal(&(this->queue->notEmpty));
 }
 
+//Create the active object and start its thread using 'bustywait'
 ActiveObject* createActiveObject(void (*myfunct)())
 {
-    //printf("creating AO\n");
     ActiveObject* this = malloc(sizeof(ActiveObject));
     if(!this)
     {
@@ -132,11 +125,11 @@ ActiveObject* createActiveObject(void (*myfunct)())
     }
     this->running = 0;
     this->next = NULL;
-    //printf("before initQ\n");
+    
     if((this->queue = initQueue()) == NULL)
     {
         free(this);
-        return NULL; //did not work
+        return NULL; //queue malloc did not work
     }
     this->func = myfunct;
 
@@ -145,6 +138,7 @@ ActiveObject* createActiveObject(void (*myfunct)())
     return this;
 }
 
+//return the queue of the active object
 Queue* getQueue(ActiveObject* this)
 {
     return this->queue;
@@ -155,16 +149,16 @@ void stop(ActiveObject* this)
 {
     if(this->running)
     {
-        printf("cacelling thread %ld\n", this->thread);
+        //printf("cacelling thread %ld\n", this->thread);
         pthread_cancel(this->thread);
     }
-    else
-        printf("thread did not need cancelling\n");
-    printf("joining thread %ld\n", this->thread);
+    /*else
+        printf("thread did not need cancelling\n");*/
+    
     pthread_join(this->thread, NULL);
-    printf("freeing queue\n");
+    
+    //free queue and object
     freeQueue(this->queue);
-    printf("freeing ao\n");
     free(this);
 }
 

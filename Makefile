@@ -18,4 +18,4 @@ myqueue.o: myqueue.c
 .PHONY: all clean
 
 clean:
-	-rm *.o *.so client st_pipeline
+	-rm *.o st_pipeline
